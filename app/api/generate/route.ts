@@ -6,7 +6,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 export async function POST(req: Request) {
   try {
     const { title } = await req.json();
-    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const prompt = `You are a KDP (Kindle Direct Publishing) expert. For a book titled "${title}", provide:
 1. Seven backend keywords (comma separated)
 2. An Amazon-ready HTML book description
