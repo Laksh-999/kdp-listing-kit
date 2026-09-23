@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";() {
+import { useState } from "react";
+
+export default function Generate() {
   const [title, setTitle] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
