@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Results = {
   keywords?: string[];
@@ -8,6 +8,8 @@ type Results = {
   pro?: string | null;
 };
 
+const FREE_LIMIT = 3;
+
 export default function Home() {
   const [topic, setTopic] = useState("");
   const [tier, setTier] = useState<"free" | "pro">("free");
@@ -15,9 +17,18 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState("");
+  const [gensUsed, setGensUsed] = useState(0);
+
+  useEffect(() => {
+    setGensUsed(parseInt(localStorage.getItem("kdp_gens") || "0", 10));
+  }, []);
 
   async function generate() {
     if (!topic.trim()) return;
+    if (tier === "free" && gensUsed >= FREE_LIMIT) {
+      setError("You've used all 3 free generations. Upgrade to Pro for unlimited!");
+      return;
+    }
     setLoading(true); setError(""); setResults(null);
     try {
       const res = await fetch("/api/generate", {
@@ -28,6 +39,11 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
       setResults(data);
+      if (tier === "free") {
+        const next = gensUsed + 1;
+        localStorage.setItem("kdp_gens", String(next));
+        setGensUsed(next);
+      }
       setTimeout(() => document.getElementById("results")?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (e: unknown) {
       setError((e as Error).message);
@@ -41,6 +57,31 @@ export default function Home() {
     setCopied(id);
     setTimeout(() => setCopied(""), 1500);
   }
+
+  function downloadAll() {
+    if (!results) return;
+    const text = [
+      "🔑 BACKEND KEYWORDS",
+      (results.keywords || []).join(", "),
+      "",
+      "💡 TITLE IDEAS",
+      (results.titles || []).map((t, i) => `i+1.{i + 1}.i+1.{t}`).join("\n"),
+      "",
+      "📝 HTML DESCRIPTION (copy into Amazon's description box)",
+      results.description || "",
+      "",
+      ...(results.pro && tier === "pro" ? ["✨ PRO BONUS PACK", results.pro] : []),
+    ].join("\n");
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `kdp-listing-${topic.slice(0, 30).replace(/[^a-z0-9 ]/gi, "") || "export"}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  const gensLeft = FREE_LIMIT - gensUsed;
 
   return (
     <div style={s.page}>
@@ -70,7 +111,11 @@ export default function Home() {
               {loading ? "⏳ Generating…" : tier === "pro" ? "✨ Generate Pro" : "⚡ Generate"}
             </button>
           </div>
-          <p style={s.micro}>{tier === "free" ? "Free: 3 generations total · Pro: unlimited" : "Pro: unlimited + bonus assets"}</p>
+          <p style={s.micro}>
+            {tier === "free"
+              ? `Free: Math.max(gensLeft,0)of{Math.max(gensLeft, 0)} ofMath.max(gensLeft,0)of{FREE_LIMIT} generations left · Pro: unlimited`
+              : "Pro: unlimited generations + bonus assets"}
+          </p>
         </div>
 
         {error && <div style={s.error}>⚠️ {error}</div>}
@@ -81,6 +126,10 @@ export default function Home() {
 
         {results && !loading && (
           <>
+            <div style={s.downloadRow}>
+              <button style={s.downloadBtn} onClick={downloadAll}>⬇️ Download Full Listing (.txt)</button>
+            </div>
+
             <ResultBlock title="🔑 7 Backend Keywords" copyId="kw"
               copyText={(results.keywords || []).join(", ")}
               onCopy={copy} copied={copied}>
@@ -124,9 +173,9 @@ export default function Home() {
       <li>🔍 10 Author Central search terms</li>
       <li>📱 3 social media hooks</li>
       <li>🚀 Pricing & launch strategy</li>
-      <li>♾️ Unlimited generations</li>
+      <li>♾️ Unlimited generations — forever</li>
     </ul>
-    <button style={s.button}>Upgrade to Pro — $9/mo</button>
+    <button style={s.button}>Upgrade to Pro — $6.99 one-time</button>
   </div>
 )}
           </>
@@ -171,7 +220,7 @@ const s: Record<string, React.CSSProperties> = {
   input: { flex: 1, minWidth: 220, padding: "14px 16px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(0,0,0,0.3)", color: "#fff", fontSize: 15, outline: "none" },
   button: { padding: "14px 26px", borderRadius: 10, border: "none", cursor: "pointer", fontWeight: 700, fontSize: 15, color: "#fff", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", whiteSpace: "nowrap" },
   micro: { margin: "12px 0 0", fontSize: 12.5, color: "#64748b" },
-  error: { marginTop: 20, padding: "12px 18px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", borderRadius: 10, color: "#fca5a5", maxWidth: 680, margin: "20px auto 0" },
+  error: { marginTop: 20, padding:"12px 18px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.35)", borderRadius: 10, color: "#fca5a5", maxWidth: 680, margin: "20px auto 0" },
   results: { maxWidth: 820, margin: "0 auto", padding: "20px 24px 80px" },
   cardGhost: { background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(255,255,255,0.15)", borderRadius: 16, padding: 60, textAlign: "center" },
   spinner: { width: 40, height: 40, margin: "0 auto 16px", border: "4px solid rgba(255,255,255,0.15)", borderTopColor: "#818cf8", borderRadius: "50%", animation: "spin 0.9s linear infinite" },
@@ -185,14 +234,16 @@ const s: Record<string, React.CSSProperties> = {
   preview: { background: "#fff", color: "#1e293b", borderRadius: 10, padding: 24, lineHeight: 1.6 },
   details: { marginTop: 12, fontSize: 13 },
   pre: { background: "rgba(0,0,0,0.35)", padding: 16, borderRadius: 10, overflowX: "auto", fontSize: 12.5, whiteSpace: "pre-wrap", color: "#cbd5e1" },
-  list: { margin: 0, paddingLeft: 20, lineHeight: 1.9, color: "#e2e8f0" },
+  list: { margin: 0, paddingLeft: 20, lineHeight: 1.9, color: "#e2e8f0", textAlign: "left" },
   listItem: { marginBottom: 4 },
   upgradeBox: { background: "linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12))", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 16, padding: 28, textAlign: "center" },
+  upgradeTitle: { margin: "0 0 12px", color: "#fff" },
   footer: { textAlign: "center", padding: 30, color: "#475569", fontSize: 13 },
   proWrap: { display: "flex", flexDirection: "column", gap: 12 },
   proCard: { background: "linear-gradient(135deg,rgba(99,102,241,0.10),rgba(139,92,246,0.06))", border: "1px solid rgba(139,92,246,0.35)", borderRadius: 12, overflow: "hidden" },
   proCardTitle: { padding: "12px 18px", fontWeight: 800, fontSize: 14, letterSpacing: 0.5, color: "#c7d2fe", background: "rgba(139,92,246,0.12)", borderBottom: "1px solid rgba(139,92,246,0.3)", textTransform: "uppercase" },
   proCardBody: { padding: "16px 18px", whiteSpace: "pre-wrap", fontSize: 13.5, lineHeight: 1.7, color: "#cbd5e1" },
-  upgradeTitle: { margin: "0 0 12px", color: "#fff" },        
+  downloadRow: { display: "flex", justifyContent: "flex-end", marginBottom: 16 },
+  downloadBtn: { padding: "9px 18px", borderRadius: 10, border: "1px solid rgba(56,189,248,0.4)", background: "rgba(56,189,248,0.12)", color: "#7dd3fc", cursor: "pointer", fontSize: 13, fontWeight: 700 },
 };
-            
+
