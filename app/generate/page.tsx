@@ -129,6 +129,15 @@ export default function Home() {
     <button style={s.button}>Upgrade to Pro — $9/mo</button>
   </div>
 )}
+          </>
+
+        )}
+      </section>
+
+      <footer style={s.footer}>Built for self-publishers · Powered by AI</footer>
+    </div>
+  );
+}
 
 function ResultBlock({ title, children, copyText, copyId, onCopy, copied }:
   { title: string; children: React.ReactNode; copyText: string; copyId: string; onCopy: (t: string, id: string) => void; copied: string }) {
