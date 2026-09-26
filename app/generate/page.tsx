@@ -152,7 +152,6 @@ const s: Record<string, React.CSSProperties> = {
   h1: { fontSize: 44, fontWeight: 800, color: "#fff", lineHeight: 1.15, marginBottom: 16 },
   gradient: { background: "linear-gradient(90deg,#818cf8,#38bdf8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" },
   sub: { color: "#94a3b8", fontSize: 17, maxWidth: 600, margin: "0 auto 32px" },
-  sub: { color: "#94a3b8", fontSize: 17, maxWidth: 600, margin: "0 auto 32px" },
   card: { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: 24, maxWidth: 680, margin: "0 auto", textAlign: "left" },
   label: { display: "block", fontWeight: 700, marginBottom: 10, color: "#e2e8f0" },
   row: { display: "flex", gap: 10, flexWrap: "wrap" },
