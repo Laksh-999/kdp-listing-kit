@@ -1,3 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes spin { to { transform: rotate(360deg); } }
+#results h2, #results h3 { color: #1e293b; }
