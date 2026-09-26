@@ -25,14 +25,13 @@ export default function Home() {
           <span style={styles.gradientText}>Be Discovered.</span>
         </h1>
         <p style={styles.subtitle}>
-          Paste your book title. Get KDP-ready backend keywords, a formatted
-          Amazon description and title ideas — in 5 seconds. No research, no
-          guesswork, no signup.
+      Paste your book title. Get KDP-ready backend keywords, a formatted Amazon
+description and title ideas — in 5 seconds. Unlock everything for $6.99, once.
         </p>
         <Link href="/generate" style={styles.cta}>
           ⚡ Generate My Listing — Free →
         </Link>
-        <div style={styles.microCopy}>3 free generations daily · No credit card</div>
+        <div style={styles.microCopy}>3 free generations — no card, no signup</div>
       </section>
 
       {/* CHECKLIST */}
