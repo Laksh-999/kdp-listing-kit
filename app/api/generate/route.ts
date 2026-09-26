@@ -4,6 +4,19 @@ import { NextResponse } from "next/server";
 const rateMap = new Map<string, { count: number; reset: number }>();
 const FREE_LIMIT = 5;
 const WINDOW_MS = 60 * 60 * 1000;
+// 🎲 Random creative angle — makes every regeneration different
+const ANGLES = [
+  "benefit-driven (lead with what the reader gains)",
+  "storytelling (open with a relatable mini-scenario)",
+  "problem-solution (name the frustration, then the fix)",
+  "playful & witty (light humor, energetic tone)",
+  "emotional & heartfelt (warm, personal, gift-oriented)",
+  "authority & expert (confident, data-backed tone)",
+  "question-hook (open with a question the reader says yes to)",
+];
+function randomAngle() {
+  return ANGLES[Math.floor(Math.random() * ANGLES.length)];
+}
 
 function isRateLimited(ip: string, isPro: boolean) {
   if (isPro) return false;
@@ -30,7 +43,10 @@ async function callGemini(prompt: string, attempts = 3) {
             "Content-Type": "application/json",
             "x-goog-api-key": process.env.GEMINI_API_KEY || "",
           },
-          body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] }),
+                  body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: (prompt as string & { __temp?: number }) ? temperatureHint : 1.0 },
+        }),
         }
       );
       const data = await res.json();
@@ -63,8 +79,29 @@ export async function POST(req: Request) {
     if (!topic || !topic.trim()) {
       return NextResponse.json({ error: "Please enter a book topic first." }, { status: 400 });
     }
+    const angle = randomAngle();
+    const temperature = 0.9 + Math.random() * 0.3; // 0.9–1.2 variety
 
     const basePrompt = `You are a KDP (Kindle Direct Publishing) expert and Amazon SEO specialist. For a book about "${topic}", provide:
+
+CREATIVE DIRECTION for this generation: ${angle}. Write with a completely fresh voice — vary sentence structure, vocabulary, and phrasing from any previous generation of this same topic. Never reuse generic filler like "Look no further" or "This book is perfect for".
+
+1. SEVEN BACKEND KEYWORDS — each under 50 characters, comma separated, no words repeated from the topic, optimized for real Amazon search terms.
+2. AMAZON HTML DESCRIPTION — valid KDP-compatible HTML only (<h2>, <h3>, <b>, <ul>, <li>, <i>, <br>). Structure it as:
+   - An attention-grabbing <h2> hook headline
+   - A 2-3 sentence intro that speaks to the reader's pain point or desire
+   - A <ul> with 4-6 bullets, each starting with <b>bolded benefit phrase</b> then explanation
+   - A short "who this is perfect for / gift angle" paragraph
+   - A clear call-to-action line
+   Tone: ${angle.split(" (")[0]}.
+3. THREE ALTERNATIVE TITLES — formatted as "Title: Subtitle" where the subtitle carries keywords. Avoid generic title patterns; make each distinct in style.
+4. THREE BEST-MATCH AMAZON CATEGORIES — real KDP browse categories (books or the book's type, e.g. journals, planners, cookbooks), most specific first.
+
+Format your answer exactly as:
+KEYWORDS: comma-separated list
+DESCRIPTION: the html
+TITLES: one per line
+CATEGORIES: comma-separated list`;
 
 1. SEVEN BACKEND KEYWORDS — each under 50 characters, comma separated, no words repeated from the topic, optimized for real Amazon search terms.
 2. AMAZON HTML DESCRIPTION — valid KDP-compatible HTML only (<h2>, <h3>, <b>, <ul>, <li>, <i>, <br>). Include a hook headline, pain-point intro, bulleted feature list, gift angle, and a call to action.
@@ -93,9 +130,14 @@ CATEGORIES: comma-separated list`;
       : [];
     
 const plainDescription = description
+  .replace(/<h2[^>]*>/gi, "\n\n■ ")
+  .replace(/<h3[^>]*>/gi, "\n\n● ")
+  .replace(/<li[^>]*>/gi, "\n  ✓ ")
   .replace(/<br\s*\/?>/gi, "\n")
-  .replace(/<\/(h2|h3|li|ul|p)>/gi, "\n")
-  .replace(/<[^>]+>/g, "");
+  .replace(/<\/(h2|h3|ul|p)>/gi, "\n")
+  .replace(/<[^>]+>/g, "")
+  .replace(/\n{3,}/g, "\n\n")
+  .trim();
 
 const result: Record<string, unknown> = { keywords, description, plainDescription, titles, categories, tier: isPro ? "pro" : "free" };
 
