@@ -178,13 +178,12 @@ export default function Home() {
   ...
   </div>
 )}                             
-        {/* 📝 Plain Description */}
+       {/* 📝 Plain Description */}
 {(results.plainDescription || "").length > 0 && (
   <ResultBlock title="📝 Plain Description" copyId="plaindesc" copyText={results.plainDescription} onCopy={copy} copied={copied}>
     <p style={{ ...s.listItem, whiteSpace: "pre-wrap" }}>{results.plainDescription}</p>
   </ResultBlock>
 )}
-
 {results.pro && tier === "pro" ? (
   <ResultBlock title="✨ Pro Bonus Pack" copyId="pro" copyText={results.pro} onCopy={copy} copied={copied}>
     <div style={s.proWrap}>
