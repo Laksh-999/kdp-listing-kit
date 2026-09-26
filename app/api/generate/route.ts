@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 
 // Simple in-memory rate limiter (per server instance — fine for starting out)
 const rateMap = new Map<string, { count: number; reset: number }>();
-const FREE_LIMIT = 5;          // generations per window
-const WINDOW_MS = 60 * 60 * 1000; // 1 hour
+const FREE_LIMIT = 5;
+const WINDOW_MS = 60 * 60 * 1000;
 
 function isRateLimited(ip: string, isPro: boolean) {
   if (isPro) return false;
@@ -17,21 +17,34 @@ function isRateLimited(ip: string, isPro: boolean) {
   return entry.count > FREE_LIMIT;
 }
 
-async function callGemini(prompt: string) {
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY || "",
-      },
-      body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] }),
+// 🔁 Retry with backoff — survives Gemini "high demand" spikes
+async function callGemini(prompt: string, attempts = 3) {
+  let lastError = "Gemini request failed";
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": process.env.GEMINI_API_KEY || "",
+          },
+          body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: prompt }] }] }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || "Gemini request failed");
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response";
+    } catch (e: unknown) {
+      lastError = (e as Error).message;
+      if (i < attempts - 1) {
+        // wait 2s, then 4s before retrying
+        await new Promise((r) => setTimeout(r, 2000 * (i + 1)));
+      }
     }
-  );
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.error?.message || "Gemini request failed");
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response";
+  }
+  throw new Error(lastError);
 }
 
 export async function POST(req: Request) {
@@ -56,24 +69,30 @@ export async function POST(req: Request) {
 1. SEVEN BACKEND KEYWORDS — each under 50 characters, comma separated, no words repeated from the topic, optimized for real Amazon search terms.
 2. AMAZON HTML DESCRIPTION — valid KDP-compatible HTML only (<h2>, <h3>, <b>, <ul>, <li>, <i>, <br>). Include a hook headline, pain-point intro, bulleted feature list, gift angle, and a call to action.
 3. THREE ALTERNATIVE TITLES — formatted as "Title: Subtitle" where the subtitle carries keywords.
+4. THREE BEST-MATCH AMAZON CATEGORIES — real KDP browse categories (books or the book's type, e.g. journals, planners, cookbooks), most specific first.
 
 Format your answer exactly as:
 KEYWORDS: comma-separated list
 DESCRIPTION: the html
-TITLES: one per line`;
+TITLES: one per line
+CATEGORIES: comma-separated list`;
 
     const text = await callGemini(basePrompt);
 
     // Parse sections
     const kwMatch = text.match(/KEYWORDS:([\s\S]*?)(?=DESCRIPTION:)/i);
     const descMatch = text.match(/DESCRIPTION:([\s\S]*?)(?=TITLES:)/i);
-    const titleMatch = text.match(/TITLES:([\s\S]*)$/i);
+    const titleMatch = text.match(/TITLES:([\s\S]*?)(?=CATEGORIES:)/i);
+    const catMatch = text.match(/CATEGORIES:([\s\S]*)$/i);
 
     const keywords = kwMatch ? kwMatch[1].split(",").map((k) => k.trim()).filter(Boolean) : [];
     const description = descMatch ? descMatch[1].trim() : "";
     const titles = titleMatch ? titleMatch[1].split("\n").map((t) => t.trim()).filter(Boolean) : [];
+    const categories = catMatch
+      ? catMatch[1].split(",").map((c) => c.trim()).filter(Boolean).slice(0, 3)
+      : [];
 
-    const result: Record<string, unknown> = { keywords, description, titles, tier: isPro ? "pro" : "free" };
+    const result: Record<string, unknown> = { keywords, description, titles, categories, tier: isPro ? "pro" : "free" };
 
     // ⭐ PRO-ONLY: extra assets
     if (isPro) {
