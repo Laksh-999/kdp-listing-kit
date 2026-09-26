@@ -100,31 +100,35 @@ export default function Home() {
               <ol style={s.list}>{(results.titles || []).map((t, i) => <li key={i} style={s.listItem}>{t}</li>)}</ol>
             </ResultBlock>
 
-            {results.pro ? (
-              <ResultBlock title="✨ Pro Bonus Pack" copyId="pro" copyText={results.pro} onCopy={copy} copied={copied}>
-                <pre style={s.pre}>{results.pro}</pre>
-              </ResultBlock>
-            ) : (
-              <div style={s.upgradeBox}>
-                <h3>🔒 Unlock the Pro Bonus Pack</h3>
-                <ul style={s.list}>
-                  <li>📊 A+ Content outlines (3 modules)</li>
-                  <li>🔍 10 Author Central search terms</li>
-                  <li>📱 3 social media hooks</li>
-                  <li>🚀 Pricing & launch strategy</li>
-                  <li>♾️ Unlimited generations</li>
-                </ul>
-                <button style={s.button}>Upgrade to Pro — $9/mo</button>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      <footer style={s.footer}>Built for self-publishers · Powered by AI</footer>
+{results.pro && tier === "pro" ? (
+  <ResultBlock title="✨ Pro Bonus Pack" copyId="pro" copyText={results.pro} onCopy={copy} copied={copied}>
+    <div style={s.proWrap}>
+      {results.pro.split(/\n(?=[A-Z][A-Z0-9 &+\/]{2,}:)/).map((section, i) => {
+        const lines = section.split("\n");
+        const heading = lines[0].replace(/:$/, "");
+        const body = lines.slice(1).join("\n").trim();
+        return (
+          <div key={i} style={s.proCard}>
+            <div style={s.proCardTitle}>◆ {heading}</div>
+            <div style={s.proCardBody}>{body}</div>
+          </div>
+        );
+      })}
     </div>
-  );
-}
+  </ResultBlock>
+) : (
+  <div style={s.upgradeBox}>
+    <h3 style={s.upgradeTitle}>🔒 Unlock the Pro Bonus Pack</h3>
+    <ul style={s.list}>
+      <li>📊 A+ Content outlines (3 modules)</li>
+      <li>🔍 10 Author Central search terms</li>
+      <li>📱 3 social media hooks</li>
+      <li>🚀 Pricing & launch strategy</li>
+      <li>♾️ Unlimited generations</li>
+    </ul>
+    <button style={s.button}>Upgrade to Pro — $9/mo</button>
+  </div>
+)}
 
 function ResultBlock({ title, children, copyText, copyId, onCopy, copied }:
   { title: string; children: React.ReactNode; copyText: string; copyId: string; onCopy: (t: string, id: string) => void; copied: string }) {
@@ -176,6 +180,10 @@ const s: Record<string, React.CSSProperties> = {
   listItem: { marginBottom: 4 },
   upgradeBox: { background: "linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12))", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 16, padding: 28, textAlign: "center" },
   footer: { textAlign: "center", padding: 30, color: "#475569", fontSize: 13 },
+  proWrap: { display: "flex", flexDirection: "column", gap: 12 },
+  proCard: { background: "linear-gradient(135deg,rgba(99,102,241,0.10),rgba(139,92,246,0.06))", border: "1px solid rgba(139,92,246,0.35)", borderRadius: 12, overflow: "hidden" },
+  proCardTitle: { padding: "12px 18px", fontWeight: 800, fontSize: 14, letterSpacing: 0.5, color: "#c7d2fe", background: "rgba(139,92,246,0.12)", borderBottom: "1px solid rgba(139,92,246,0.3)", textTransform: "uppercase" },
+  proCardBody: { padding: "16px 18px", whiteSpace: "pre-wrap", fontSize: 13.5, lineHeight: 1.7, color: "#cbd5e1" },
+  upgradeTitle: { margin: "0 0 12px", color: "#fff" },        
 };
-
-
+            
