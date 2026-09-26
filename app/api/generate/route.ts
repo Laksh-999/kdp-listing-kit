@@ -142,13 +142,14 @@ SEARCH_TERMS: comma separated
 SOCIAL_HOOKS: one per line
 LAUNCH_TIPS: numbered`;
 
-      try {
+            try {
         const proText = await callGemini(proPrompt);
         result.pro = proText;
-      } catch {
+      } catch (proErr) {
+        // Surface the failure instead of hiding it
         result.pro = null;
+        result.proError = (proErr as Error).message;
       }
-    }
 
     return NextResponse.json(result);
   } catch (err) {
