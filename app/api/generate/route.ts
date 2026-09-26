@@ -91,8 +91,13 @@ CATEGORIES: comma-separated list`;
     const categories = catMatch
       ? catMatch[1].split(",").map((c) => c.trim()).filter(Boolean).slice(0, 3)
       : [];
+    
+const plainDescription = description
+  .replace(/<br\s*\/?>/gi, "\n")
+  .replace(/<\/(h2|h3|li|ul|p)>/gi, "\n")
+  .replace(/<[^>]+>/g, "");
 
-    const result: Record<string, unknown> = { keywords, description, titles, categories, tier: isPro ? "pro" : "free" };
+const result: Record<string, unknown> = { keywords, description, plainDescription, titles, categories, tier: isPro ? "pro" : "free" };
 
     // ⭐ PRO-ONLY: extra assets
     if (isPro) {
