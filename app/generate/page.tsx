@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 
 type Results = {
+  plainDescription?: string;
   keywords?: string[];
   description?: string;
   titles?: string[];
@@ -73,6 +74,9 @@ export default function Home() {
       "",
       "📝 HTML DESCRIPTION (copy into Amazon's description box)",
       results.description || "",
+      "",
+      "📝 PLAIN DESCRIPTION (paste directly into Amazon)",
+      results.plainDescription || "",
       "",
       ...(results.pro && tier === "pro" ? ["✨ PRO BONUS PACK", results.pro] : []),
     ].join("\n");
@@ -164,6 +168,21 @@ export default function Home() {
       ))}
     </ol>
   </div>
+)}
+  <h3 ...>💡 Title Ideas</h3>
+  ...
+</ResultBlock>
+
+{/* 🏷️ Best-Match Categories */}
+{(results.categories || []).length > 0 && (
+  ...
+  </div>
+)}                             
+        {/* 📝 Plain Description */}
+{(results.plainDescription || "").length > 0 && (
+  <ResultBlock title="📝 Plain Description" copyId="plaindesc" copyText={results.plainDescription} onCopy={copy} copied={copied}>
+    <p style={{ ...s.listItem, whiteSpace: "pre-wrap" }}>{results.plainDescription}</p>
+  </ResultBlock>
 )}
 
 {results.pro && tier === "pro" ? (
