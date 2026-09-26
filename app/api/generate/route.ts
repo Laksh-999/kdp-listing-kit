@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { title } = await req.json();
+    const { topic } = await req.json();
 
-    const prompt = `You are a KDP (Kindle Direct Publishing) expert. For a book titled "${title}", provide:
-1. Seven backend keywords (comma separated)
+    if (!topic || !topic.trim()) {
+      return NextResponse.json(
+        { error: "Please enter a book topic first." },
+        { status: 400 }
+      );
+    }
+
+    const prompt = `You are a KDP (Kindle Direct Publishing) expert. For a book about "${topic}", provide:
+1. Seven backend keywords (under 50 characters each, comma separated, no repetition of the title)
 2. An Amazon-ready HTML book description
 3. Three alternative title ideas`;
 
@@ -26,17 +33,18 @@ export async function POST(req: Request) {
     const data = await res.json();
 
     if (!res.ok) {
+      const msg = data?.error?.message || JSON.stringify(data);
       return NextResponse.json(
-        { text: "Error: " + JSON.stringify(data) },
+        { error: "Gemini API error: " + msg },
         { status: 500 }
       );
     }
 
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? "No response";
-    return NextResponse.json({ text, result: text });
+    return NextResponse.json({ result: text });
   } catch (err) {
     return NextResponse.json(
-      { text: "Error: " + (err as Error).message },
+      { error: "Server error: " + (err as Error).message },
       { status: 500 }
     );
   }
