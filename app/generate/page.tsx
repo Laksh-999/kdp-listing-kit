@@ -169,15 +169,7 @@ export default function Home() {
     </ol>
   </div>
 )}
-  <h3 ...>💡 Title Ideas</h3>
-  ...
-</ResultBlock>
-
-{/* 🏷️ Best-Match Categories */}
-{(results.categories || []).length > 0 && (
-  ...
-  </div>
-)}                             
+                     
        {/* 📝 Plain Description */}
 {(results.plainDescription || "").length > 0 && (
   <ResultBlock title="📝 Plain Description" copyId="plaindesc" copyText={results.plainDescription} onCopy={copy} copied={copied}>
