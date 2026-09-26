@@ -53,7 +53,7 @@ async function callGemini(prompt: string, attempts = 3) {
     } catch (e: unknown) {
       lastError = (e as Error).message;
       if (i < attempts - 1) {
-        await new Promise((r) => setTimeout(r, 2000 * (i + 1)));
+            await new Promise((r) => setTimeout(r, 15000 * (i + 1)));
       }
     }
   }
