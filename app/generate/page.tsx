@@ -111,11 +111,11 @@ export default function Home() {
               {loading ? "⏳ Generating…" : tier === "pro" ? "✨ Generate Pro" : "⚡ Generate"}
             </button>
           </div>
-          <p style={s.micro}>
-            {tier === "free"
-              ? `Free: Math.max(gensLeft,0)of{Math.max(gensLeft, 0)} ofMath.max(gensLeft,0)of{FREE_LIMIT} generations left · Pro: unlimited`
-              : "Pro: unlimited generations + bonus assets"}
-          </p>
+   <p style={s.micro}>
+   {tier === "free"
+    ? "Free: " + Math.max(gensLeft, 0) + " of " + FREE_LIMIT + " generations left · Pro: unlimited"
+    : "Pro: unlimited generations + bonus assets"}
+        </p>
         </div>
 
         {error && <div style={s.error}>⚠️ {error}</div>}
