@@ -37,7 +37,7 @@ async function callGemini(prompt: string, attempts = 3) {
   for (let i = 0; i < attempts; i++) {
     try {
       const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
         {
           method: "POST",
           headers: {
@@ -77,11 +77,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Please enter a book topic first." }, { status: 400 });
     }
 
-    const angle = randomAngle();
+    angle = randomAngle();
 
     const basePrompt = `You are a KDP (Kindle Direct Publishing) expert and Amazon SEO specialist. For a book about "${topic}", provide:
 
-CREATIVE DIRECTION for this generation: ${angle}. Write with a completely fresh voice — vary sentence structure, vocabulary, and phrasing from any previous generation of this same topic. Never reuse generic filler like "Look no further" or "This book is perfect for".
+CREATIVE DIRECTION for this generation: ${angle}. Write with a completely fresh voice — vary sentence structure, vocabulary, and phrasing. Never reuse generic filler like "Look no further" or "This book is perfect for".
 
 1. SEVEN BACKEND KEYWORDS — each under 50 characters, comma separated, no words repeated from the topic, optimized for real Amazon search terms.
 2. AMAZON HTML DESCRIPTION — valid KDP-compatible HTML only (<h2>, <h3>, <b>, <ul>, <li>, <i>, <br>). Structure it as:
@@ -142,14 +142,14 @@ SEARCH_TERMS: comma separated
 SOCIAL_HOOKS: one per line
 LAUNCH_TIPS: numbered`;
 
-            try {
+      try {
         const proText = await callGemini(proPrompt);
         result.pro = proText;
       } catch (proErr) {
-        // Surface the failure instead of hiding it
         result.pro = null;
         result.proError = (proErr as Error).message;
       }
+    }
 
     return NextResponse.json(result);
   } catch (err) {
