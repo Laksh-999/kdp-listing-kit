@@ -70,7 +70,7 @@ export default function Home() {
               {loading ? "⏳ Generating…" : tier === "pro" ? "✨ Generate Pro" : "⚡ Generate"}
             </button>
           </div>
-          <p style={s.micro}>{tier === "free" ? "Free: 5 generations/hour" : "Pro: unlimited + bonus assets"}</p>
+          <p style={s.micro}>{tier === "free" ? "Free: 3 generations total · Pro: unlimited" : "Pro: unlimited + bonus assets"}</p>
         </div>
 
         {error && <div style={s.error}>⚠️ {error}</div>}
