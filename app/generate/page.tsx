@@ -176,6 +176,6 @@ const s: Record<string, React.CSSProperties> = {
   listItem: { marginBottom: 4 },
   upgradeBox: { background: "linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12))", border: "1px solid rgba(139,92,246,0.4)", borderRadius: 16, padding: 28, textAlign: "center" },
   footer: { textAlign: "center", padding: 30, color: "#475569", fontSize: 13 },
-});
+};
 
 
