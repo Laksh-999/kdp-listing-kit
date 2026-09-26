@@ -66,7 +66,7 @@ export default function Home() {
       (results.keywords || []).join(", "),
       "",
       "💡 TITLE IDEAS",
-      (results.titles || []).map((t, i) => `i+1.{i + 1}.i+1.{t}`).join("\n"),
+     (results.titles || []).map((t, i) => (i + 1) + ". " + t).join("\n"),
       "",
       "🏷️ BEST-MATCH CATEGORIES",
       (results.categories || []).join("\n"),
