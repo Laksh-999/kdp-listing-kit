@@ -8,6 +8,7 @@ type Results = {
   titles?: string[];
   categories?: string[];
   pro?: string | null;
+  proError?: string;
 };
 
 const FREE_LIMIT = 3;
@@ -175,6 +176,9 @@ export default function Home() {
   <ResultBlock title="📝 Plain Description" copyId="plaindesc" copyText={results.plainDescription} onCopy={copy} copied={copied}>
     <p style={{ ...s.listItem, whiteSpace: "pre-wrap" }}>{results.plainDescription}</p>
   </ResultBlock>
+)}
+            {results.proError && (
+  <div style={s.error}>⚠️ Pro bonus failed: {results.proError}</div>
 )}
 {results.pro && tier === "pro" ? (
   <ResultBlock title="✨ Pro Bonus Pack" copyId="pro" copyText={results.pro} onCopy={copy} copied={copied}>
