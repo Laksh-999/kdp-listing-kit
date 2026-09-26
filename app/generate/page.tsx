@@ -5,6 +5,7 @@ type Results = {
   keywords?: string[];
   description?: string;
   titles?: string[];
+  categories?: string[];
   pro?: string | null;
 };
 
@@ -148,6 +149,19 @@ export default function Home() {
               copyText={(results.titles || []).join("\n")} onCopy={copy} copied={copied}>
               <ol style={s.list}>{(results.titles || []).map((t, i) => <li key={i} style={s.listItem}>{t}</li>)}</ol>
             </ResultBlock>
+            {/* 🏷️ Best-Match Categories */}
+{(results.categories || []).length > 0 && (
+  <div style={s.resultCard}>
+    <div style={s.resultHeader}>
+      <h3 style={s.resultTitle}>🏷️ Best-Match Categories</h3>
+    </div>
+    <ol style={s.list}>
+      {(results.categories || []).map((c, i) => (
+        <li key={i} style={s.listItem}>{c}</li>
+      ))}
+    </ol>
+  </div>
+)}
 
 {results.pro && tier === "pro" ? (
   <ResultBlock title="✨ Pro Bonus Pack" copyId="pro" copyText={results.pro} onCopy={copy} copied={copied}>
