@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Please enter a book topic first." }, { status: 400 });
     }
 
-    angle = randomAngle();
+    const angle = randomAngle();
 
     const basePrompt = `You are a KDP (Kindle Direct Publishing) expert and Amazon SEO specialist. For a book about "${topic}", provide:
 
