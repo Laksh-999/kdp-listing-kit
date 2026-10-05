@@ -157,18 +157,16 @@ export default function Home() {
               copyText={(results.titles || []).join("\n")} onCopy={copy} copied={copied}>
               <ol style={s.list}>{(results.titles || []).map((t, i) => <li key={i} style={s.listItem}>{t}</li>)}</ol>
             </ResultBlock>
-            {/* 🏷️ Best-Match Categories */}
+           {/* 🏷️ Best-Match Categories */}
 {(results.categories || []).length > 0 && (
-  <div style={s.resultCard}>
-    <div style={s.resultHeader}>
-      <h3 style={s.resultTitle}>🏷️ Best-Match Categories</h3>
-    </div>
+  <ResultBlock title="🏷️ Best-Match Categories" copyId="cats"
+    copyText={(results.categories || []).join("\n")} onCopy={copy} copied={copied}>
     <ol style={s.list}>
       {(results.categories || []).map((c, i) => (
         <li key={i} style={s.listItem}>{c}</li>
       ))}
     </ol>
-  </div>
+  </ResultBlock>
 )}
                      
        {/* 📝 Plain Description */}
